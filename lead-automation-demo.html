@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lead Automation Demo — Laiba Aftab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=Source+Sans+3:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0b0f1a;
+    --surface:#131826;
+    --surface2:#1b2233;
+    --border:rgba(255,255,255,0.08);
+    --border-strong:rgba(255,255,255,0.16);
+    --text:#edeff5;
+    --text-dim:#9099b0;
+    --text-faint:#5b6478;
+    --violet:#8b7fff;
+    --violet-soft:rgba(139,127,255,0.14);
+    --amber:#ffb648;
+    --amber-soft:rgba(255,182,72,0.14);
+    --green:#4ade80;
+    --green-soft:rgba(74,222,128,0.14);
+    --radius:16px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Source Sans 3',sans-serif;
+    line-height:1.55;
+    -webkit-font-smoothing:antialiased;
+    min-height:100vh;
+  }
+  h1,h2,h3{font-family:'Manrope',sans-serif;font-weight:700;letter-spacing:-0.01em;}
+  .mono{font-family:'IBM Plex Mono',monospace;}
+  .wrap{max-width:1080px;margin:0 auto;padding:56px 28px 90px;}
+
+  /* HEADER */
+  .top{margin-bottom:48px;}
+  .kicker{
+    display:inline-flex;align-items:center;gap:8px;
+    font-size:13px;color:var(--text-dim);
+    border:1px solid var(--border-strong);border-radius:999px;
+    padding:6px 14px;margin-bottom:22px;
+  }
+  .kicker .dot{width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green);}
+  h1{font-size:clamp(28px,4.2vw,40px);line-height:1.12;max-width:640px;margin-bottom:14px;}
+  .top p{color:var(--text-dim);font-size:16px;max-width:560px;}
+
+  /* LAYOUT */
+  .board{
+    display:grid;
+    grid-template-columns:340px 1fr;
+    gap:24px;
+    align-items:start;
+  }
+  @media(max-width:820px){ .board{grid-template-columns:1fr;} }
+
+  /* FORM PANEL */
+  .panel{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    padding:26px;
+  }
+  .panel h3{font-size:16px;margin-bottom:4px;}
+  .panel .sub{color:var(--text-faint);font-size:13px;margin-bottom:22px;}
+  .field{margin-bottom:16px;}
+  .field label{
+    display:block;font-size:12.5px;color:var(--text-dim);margin-bottom:7px;
+  }
+  .field input,.field select,.field textarea{
+    width:100%;background:var(--bg);border:1px solid var(--border-strong);
+    border-radius:9px;padding:11px 13px;color:var(--text);
+    font-family:'Source Sans 3',sans-serif;font-size:14px;
+  }
+  .field input:focus,.field select:focus,.field textarea:focus{
+    outline:none;border-color:var(--violet);
+    box-shadow:0 0 0 3px var(--violet-soft);
+  }
+  .field textarea{min-height:78px;resize:vertical;}
+  .run-btn{
+    width:100%;margin-top:4px;
+    background:linear-gradient(95deg,var(--violet),#6f5ff0);
+    color:#fff;border:none;border-radius:10px;
+    font-family:'Manrope',sans-serif;font-weight:700;font-size:14.5px;
+    padding:13px;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;gap:8px;
+    transition:transform .15s, box-shadow .15s, opacity .15s;
+  }
+  .run-btn:hover{transform:translateY(-1px);box-shadow:0 10px 24px rgba(139,127,255,0.35);}
+  .run-btn:disabled{opacity:.5;cursor:not-allowed;transform:none;box-shadow:none;}
+  .sample-row{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;}
+  .sample-chip{
+    font-size:12px;color:var(--text-dim);
+    border:1px solid var(--border-strong);border-radius:999px;
+    padding:5px 12px;cursor:pointer;background:transparent;
+    transition:border-color .15s,color .15s;
+  }
+  .sample-chip:hover{border-color:var(--violet);color:var(--text);}
+
+  /* PIPELINE */
+  .pipeline{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    padding:26px;
+  }
+  .pipeline h3{font-size:16px;margin-bottom:4px;}
+  .pipeline .sub{color:var(--text-faint);font-size:13px;margin-bottom:24px;}
+  .stage{
+    display:grid;grid-template-columns:34px 1fr;gap:16px;
+    padding-bottom:26px;position:relative;
+  }
+  .stage:not(:last-child)::before{
+    content:"";position:absolute;left:16px;top:34px;bottom:0;width:1px;
+    background:var(--border-strong);
+  }
+  .stage-icon{
+    width:34px;height:34px;border-radius:50%;
+    background:var(--surface2);border:1px solid var(--border-strong);
+    display:flex;align-items:center;justify-content:center;
+    font-family:'IBM Plex Mono',monospace;font-size:12.5px;color:var(--text-faint);
+    transition:background .25s,border-color .25s,color .25s;
+    z-index:1;
+  }
+  .stage.active .stage-icon{
+    background:var(--violet-soft);border-color:var(--violet);color:var(--violet);
+  }
+  .stage.done .stage-icon{
+    background:var(--green-soft);border-color:var(--green);color:var(--green);
+  }
+  .stage-body{padding-top:4px;}
+  .stage-title{font-size:14.5px;font-weight:600;color:var(--text-faint);transition:color .25s;}
+  .stage.active .stage-title,.stage.done .stage-title{color:var(--text);}
+  .stage-detail{
+    margin-top:8px;font-size:13.5px;color:var(--text-dim);
+    max-height:0;overflow:hidden;opacity:0;
+    transition:max-height .35s ease, opacity .35s ease, margin-top .35s ease;
+  }
+  .stage.done .stage-detail{max-height:220px;opacity:1;}
+  .stage-detail .card{
+    background:var(--bg);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;margin-top:4px;
+  }
+  .badge{
+    display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:11px;
+    padding:3px 9px;border-radius:999px;margin-right:6px;margin-bottom:6px;
+  }
+  .badge.hot{background:var(--amber-soft);color:var(--amber);}
+  .badge.warm{background:var(--violet-soft);color:var(--violet);}
+  .badge.cool{background:rgba(255,255,255,0.08);color:var(--text-dim);}
+  .cal-link{
+    display:inline-flex;align-items:center;gap:6px;margin-top:8px;
+    color:var(--green);font-size:13px;font-weight:600;
+  }
+  .idle-msg{
+    color:var(--text-faint);font-size:13.5px;text-align:center;
+    padding:30px 10px;
+  }
+
+  footer{
+    margin-top:44px;padding-top:24px;border-top:1px solid var(--border);
+    display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;
+    font-size:13px;color:var(--text-faint);
+  }
+  footer a{color:var(--text-dim);}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <div class="top">
+    <div class="kicker"><span class="dot"></span> Interactive demo</div>
+    <h1>What happens the moment someone fills out your contact form</h1>
+    <p>This is a working simulation of the automation I build for clients: a lead comes in, AI reads it, sorts it, and moves it into a CRM with a booking link ready — all without anyone touching it.</p>
+  </div>
+
+  <div class="board">
+    <!-- FORM -->
+    <div class="panel">
+      <h3>Simulate a lead</h3>
+      <div class="sub">Fill this in like a visitor would on your site.</div>
+
+      <div class="field">
+        <label for="lname">Name</label>
+        <input id="lname" type="text" placeholder="Ayesha Khan" value="Ayesha Khan">
+      </div>
+      <div class="field">
+        <label for="lemail">Email</label>
+        <input id="lemail" type="email" placeholder="ayesha@example.com" value="ayesha@example.com">
+      </div>
+      <div class="field">
+        <label for="lmsg">Message</label>
+        <textarea id="lmsg" placeholder="Tell us what you need...">I need a booking system for my salon ASAP, can we talk this week?</textarea>
+      </div>
+
+      <button class="run-btn" id="runBtn">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 3v18l15-9L5 3z"/></svg>
+        Run automation
+      </button>
+
+      <div class="sample-row">
+        <button class="sample-chip" data-sample="hot">Urgent lead</button>
+        <button class="sample-chip" data-sample="warm">Curious lead</button>
+        <button class="sample-chip" data-sample="cool">Just browsing</button>
+      </div>
+    </div>
+
+    <!-- PIPELINE -->
+    <div class="pipeline">
+      <h3>Automation pipeline</h3>
+      <div class="sub">n8n workflow — form trigger to booking link</div>
+
+      <div id="stages">
+        <div class="stage" data-stage="1">
+          <div class="stage-icon">1</div>
+          <div class="stage-body">
+            <div class="stage-title">Form submission received</div>
+            <div class="stage-detail"><div class="card mono" id="s1out">—</div></div>
+          </div>
+        </div>
+        <div class="stage" data-stage="2">
+          <div class="stage-icon">2</div>
+          <div class="stage-body">
+            <div class="stage-title">AI reads &amp; classifies the lead</div>
+            <div class="stage-detail" id="s2out"></div>
+          </div>
+        </div>
+        <div class="stage" data-stage="3">
+          <div class="stage-icon">3</div>
+          <div class="stage-body">
+            <div class="stage-title">Record created in CRM</div>
+            <div class="stage-detail"><div class="card mono" id="s3out">—</div></div>
+          </div>
+        </div>
+        <div class="stage" data-stage="4">
+          <div class="stage-icon">4</div>
+          <div class="stage-body">
+            <div class="stage-title">Follow-up sent</div>
+            <div class="stage-detail" id="s4out"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="idle-msg" id="idleMsg">Fill the form and press "Run automation" to see it work.</div>
+    </div>
+  </div>
+
+  <footer>
+    <div>Built by Laiba Aftab — this page runs entirely in your browser, no data is sent anywhere.</div>
+    <a href="#">laibapafaftab-debug.github.io</a>
+  </footer>
+</div>
+
+<script>
+  const samples = {
+    hot:  { name: "Ayesha Khan", email: "ayesha@example.com", msg: "I need a booking system for my salon ASAP, can we talk this week?" },
+    warm: { name: "Michael Reyes", email: "michael@example.com", msg: "Curious what a project like this might cost, exploring options." },
+    cool: { name: "Sam Park", email: "sam@example.com", msg: "Just looking around, might reach out later." }
+  };
+
+  document.querySelectorAll('.sample-chip').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const s = samples[btn.dataset.sample];
+      document.getElementById('lname').value = s.name;
+      document.getElementById('lemail').value = s.email;
+      document.getElementById('lmsg').value = s.msg;
+    });
+  });
+
+  function classify(msg) {
+    const text = msg.toLowerCase();
+    const hotWords = ['asap', 'urgent', 'this week', 'today', 'need', 'now'];
+    const warmWords = ['cost', 'price', 'curious', 'exploring', 'considering', 'maybe'];
+    if (hotWords.some(w => text.includes(w))) return 'hot';
+    if (warmWords.some(w => text.includes(w))) return 'warm';
+    return 'cool';
+  }
+
+  const runBtn = document.getElementById('runBtn');
+  const idleMsg = document.getElementById('idleMsg');
+  const stagesEl = document.getElementById('stages');
+
+  function resetStages() {
+    document.querySelectorAll('.stage').forEach(s => s.classList.remove('active', 'done'));
+    document.getElementById('s1out').textContent = '—';
+    document.getElementById('s2out').innerHTML = '';
+    document.getElementById('s3out').textContent = '—';
+    document.getElementById('s4out').innerHTML = '';
+  }
+
+  function wait(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+  async function runAutomation() {
+    const name = document.getElementById('lname').value.trim() || 'Anonymous';
+    const email = document.getElementById('lemail').value.trim() || 'unknown@example.com';
+    const msg = document.getElementById('lmsg').value.trim() || '(no message)';
+
+    runBtn.disabled = true;
+    idleMsg.style.display = 'none';
+    stagesEl.style.display = 'block';
+    resetStages();
+
+    const stages = [1, 2, 3, 4].map(n => document.querySelector(`.stage[data-stage="${n}"]`));
+
+    // Stage 1
+    stages[0].classList.add('active');
+    await wait(500);
+    document.getElementById('s1out').textContent = `name: ${name}\nemail: ${email}\nmessage: "${msg}"`;
+    stages[0].classList.remove('active'); stages[0].classList.add('done');
+    await wait(650);
+
+    // Stage 2
+    stages[1].classList.add('active');
+    await wait(700);
+    const level = classify(msg);
+    const labels = {
+      hot: { badge: 'hot', text: 'High intent — mentions urgency. Prioritize immediate reply.' },
+      warm: { badge: 'warm', text: 'Interested but exploring — send info, keep it low pressure.' },
+      cool: { badge: 'cool', text: 'Early stage — add to nurture sequence, no rush.' }
+    };
+    document.getElementById('s2out').innerHTML =
+      `<span class="badge ${labels[level].badge}">${level.toUpperCase()} LEAD</span>` +
+      `<div class="card">${labels[level].text}</div>`;
+    stages[1].classList.remove('active'); stages[1].classList.add('done');
+    await wait(650);
+
+    // Stage 3
+    stages[2].classList.add('active');
+    await wait(600);
+    document.getElementById('s3out').textContent =
+      `Airtable → Leads table\nnew row: ${name} | ${email} | status: ${level}`;
+    stages[2].classList.remove('active'); stages[2].classList.add('done');
+    await wait(650);
+
+    // Stage 4
+    stages[3].classList.add('active');
+    await wait(650);
+    if (level === 'hot' || level === 'warm') {
+      document.getElementById('s4out').innerHTML =
+        `<div class="card">Auto-reply sent to ${email} with a personalized message.</div>` +
+        `<a class="cal-link" href="#">📅 Booking link included — Calendly slot suggested</a>`;
+    } else {
+      document.getElementById('s4out').innerHTML =
+        `<div class="card">Added to a gentle nurture email sequence — no booking link sent yet.</div>`;
+    }
+    stages[3].classList.remove('active'); stages[3].classList.add('done');
+
+    runBtn.disabled = false;
+  }
+
+  runBtn.addEventListener('click', runAutomation);
+</script>
+
+</body>
+</html>
